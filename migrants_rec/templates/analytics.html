@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+
+{% block page_content %}
+<h2 class="text-3xl font-bold text-gray-900 mb-6">Analytics Dashboard</h2>
+
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+    <div class="bg-white p-6 rounded-lg shadow-lg border-l-4 border-blue-600" data-aos="fade-up">
+        <p class="text-xl font-semibold text-gray-500">Total Migrants</p>
+        <p class="text-4xl font-bold text-gray-900">{{ analytics.total_migrants }}</p>
+    </div>
+    </div>
+
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+    <div class="bg-white p-6 rounded-lg shadow-lg" data-aos="fade-up" data-aos-delay="100">
+        <h3 class="text-xl font-semibold mb-4 text-blue-600">Gender Distribution</h3>
+        <canvas id="genderChart" style="max-height: 400px;"></canvas>
+    </div>
+
+    <div class="bg-white p-6 rounded-lg shadow-lg" data-aos="fade-up" data-aos-delay="200">
+        <h3 class="text-xl font-semibold mb-4 text-blue-600">Top 5 Nationalities</h3>
+        <canvas id="nationalityChart" style="max-height: 400px;"></canvas>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script> 
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Data passed from Flask
+        const genderData = {{ analytics.gender_distribution | tojson }};
+        const nationalityData = {{ analytics.nationality_distribution | tojson }};
+        
+        // Function to render charts
+        const renderChart = (ctxId, type, labels, data, colors) => {
+            const ctx = document.getElementById(ctxId).getContext('2d');
+            new Chart(ctx, {
+                type: type,
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Count',
+                        data: data,
+                        backgroundColor: colors,
+                        borderColor: 'white',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: { y: { beginAtZero: true } }
+                }
+            });
+        };
+        
+        // 1. Render Gender Chart (Pie Chart)
+        renderChart('genderChart', 'pie', 
+                    genderData.labels, 
+                    genderData.data, 
+                    ['#3B82F6', '#EF4444', '#F59E0B', '#10B981']);
+
+        // 2. Render Nationality Chart (Bar Chart)
+        renderChart('nationalityChart', 'bar', 
+                    nationalityData.labels, 
+                    nationalityData.data, 
+                    '#10B981');
+    });
+</script>
+{% endblock page_content %}
